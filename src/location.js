@@ -1,11 +1,42 @@
 import React, {useState} from 'react';
 import {Text, View, Button, PermissionsAndroid, StyleSheet} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
+import {openDatabase} from 'react-native-sqlite-storage';
+
+var db = openDatabase({name: 'UserDatabase.db'});
 
 const Location = () => {
   let [access, setAccess] = useState(true);
   let [latitude, setLatitude] = useState(0);
   let [longitude, setLongitude] = useState(0);
+  
+
+  let register_location = () => {
+    console.log(latitude,longitude);
+
+    db.transaction(function (tx) {
+      tx.executeSql(
+        'INSERT INTO table_user (latitude,longitude) VALUES (?,?)',
+        [latitude,longitude],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            Alert.alert(
+              'Success',
+              'You are Registered Successfully',
+              [
+                {
+                  text: 'Ok',
+                  onPress: () => navigation.navigate('HomeScreen'),
+                },
+              ],
+              {cancelable: false},
+            );
+          } else alert('Registration Failed');
+        },
+      );
+    });
+  };
   const requestLocationPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -54,6 +85,12 @@ const Location = () => {
           title="Get Location"
           onPress={() => {
             componentDidMount();
+          }}
+        />
+        <Button
+          title="Save Location"
+          onPress={() => {
+            register_location();
           }}
         />
       </View>

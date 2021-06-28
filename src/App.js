@@ -1,13 +1,17 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import {StyleSheet, Text, Button, View, TouchableOpacity} from 'react-native';
 import Camera from './camera.js';
 import Location from './location';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NavigationContainer} from '@react-navigation/native';
 import {LoginButton, AccessToken} from 'react-native-fbsdk-next';
+import {openDatabase} from 'react-native-sqlite-storage';
+import ViewDatabase from './viewDatabase'
+
+var db = openDatabase({name: 'UserDatabase.db'});
 
 function login({navigation}) {
-  let [loggedIn, setloggedIn] = useState(false);
+  let [loggedIn, setloggedIn] = useState(true);
   return (
     <View
       style={{
@@ -75,6 +79,12 @@ function homeScreen({navigation}) {
         onPress={() => {
           navigation.navigate('location');
         }}></Button>
+      <Button
+        title="VIEW DATABASE"
+        color="yellow"
+        onPress={() => {
+          navigation.navigate('database');
+        }}></Button>
     </View>
   );
 }
@@ -95,9 +105,35 @@ function locationScreen() {
   );
 }
 
+function viewDatabase(){
+  return (
+    <View>
+      <ViewDatabase />
+    </View>
+  )
+}
+
 const Stack = createStackNavigator();
 
 const App = () => {
+  useEffect(() => {
+    db.transaction(function (txn) {
+      txn.executeSql(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='table_user'",
+        [],
+        function (tx, res) {
+          console.log('item:', res.rows.length);
+          if (res.rows.length == 0) {
+            txn.executeSql('DROP TABLE IF EXISTS table_user', []);
+            txn.executeSql(
+              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, latitude INTEGER, longitude INTEGER)',
+              [],
+            );
+          }
+        },
+      );
+    });
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="login">
@@ -105,6 +141,7 @@ const App = () => {
         <Stack.Screen name="home" component={homeScreen} />
         <Stack.Screen name="camera" component={cameraScreen} />
         <Stack.Screen name="location" component={locationScreen} />
+        <Stack.Screen name="database" component={viewDatabase} />
       </Stack.Navigator>
     </NavigationContainer>
   );

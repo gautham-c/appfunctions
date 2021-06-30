@@ -11,7 +11,7 @@ import ViewDatabase from './viewDatabase'
 var db = openDatabase({name: 'UserDatabase.db'});
 
 function login({navigation}) {
-  let [loggedIn, setloggedIn] = useState(true);
+  let [loggedIn, setloggedIn] = useState(false);
   return (
     <View
       style={{
@@ -31,8 +31,9 @@ function login({navigation}) {
               console.log('login is cancelled.');
             } else {
               AccessToken.getCurrentAccessToken().then(data => {
-                setloggedIn(true);
                 console.log(data.accessToken.toString());
+                navigation.navigate('home');
+                setloggedIn(true);
               });
             }
           }}
@@ -81,7 +82,7 @@ function homeScreen({navigation}) {
         }}></Button>
       <Button
         title="VIEW DATABASE"
-        color="yellow"
+        color="orange"
         onPress={() => {
           navigation.navigate('database');
         }}></Button>

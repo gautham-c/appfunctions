@@ -52,7 +52,7 @@ function login({navigation}) {
           }}
         />
       ) : (
-        <Text>Not LoggedIn</Text>
+        <Text></Text>
       )}
     </View>
   );
